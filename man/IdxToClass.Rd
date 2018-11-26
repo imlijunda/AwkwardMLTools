@@ -4,7 +4,8 @@
 \alias{IdxToClass}
 \title{Get hot classes from indices}
 \usage{
-IdxToClass(idx, onehot, f_reduce = NULL, ret.sorted = FALSE, ...)
+IdxToClass(idx, onehot, f_reduce = NULL, ret.sorted = FALSE,
+  fast = TRUE, ...)
 }
 \arguments{
 \item{idx}{a vector of indices.}
@@ -14,6 +15,9 @@ IdxToClass(idx, onehot, f_reduce = NULL, ret.sorted = FALSE, ...)
 \item{f_reduce}{function to reduce, if NULL, union is performed.}
 
 \item{ret.sorted}{return sorted classes.}
+
+\item{fast}{whether to use faster algorithm when f_reduce is NULL, result is
+always sorted in this case.}
 
 \item{...}{arguments passed to f_reduce.}
 }

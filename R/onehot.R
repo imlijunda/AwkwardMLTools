@@ -55,12 +55,22 @@ DecodeOnehot <- function(onehot, value_offset) {
 #' @param onehot a onehot table.
 #' @param f_reduce function to reduce, if NULL, union is performed.
 #' @param ret.sorted return sorted indices.
+#' @param fast whether to use faster algorithm when f_reduce is NULL, result is
+#' always sorted in this case.
 #' @param ... arguments passed to f_reduce.
 #'
 #' @return a vector of indices.
 #' @export
 #'
-ClassToIdx <- function(cls, onehot, f_reduce = NULL, ret.sorted = FALSE, ...) {
+ClassToIdx <- function(cls, onehot, f_reduce = NULL, ret.sorted = FALSE,
+                       fast = TRUE, ...) {
+
+  if (is.null(f_reduce) && fast) {
+    tmp <- as.logical(colSums(t(onehot[, cls, drop = FALSE])))
+    idx <- seq_len(nrow(onehot))
+
+    return(idx[tmp])
+  }
 
   which_onehot(cls, onehot, f_reduce, ret.sorted, ...)
 }
@@ -71,12 +81,22 @@ ClassToIdx <- function(cls, onehot, f_reduce = NULL, ret.sorted = FALSE, ...) {
 #' @param onehot a onehot table.
 #' @param f_reduce function to reduce, if NULL, union is performed.
 #' @param ret.sorted return sorted classes.
+#' @param fast whether to use faster algorithm when f_reduce is NULL, result is
+#' always sorted in this case.
 #' @param ... arguments passed to f_reduce.
 #'
 #' @return a vector of classes.
 #' @export
 #'
-IdxToClass <- function(idx, onehot, f_reduce = NULL, ret.sorted = FALSE, ...) {
+IdxToClass <- function(idx, onehot, f_reduce = NULL, ret.sorted = FALSE,
+                       fast = TRUE, ...) {
+
+  if (is.null(f_reduce) && fast) {
+    tmp <- as.logical(colSums(onehot[idx, , drop = FALSE]))
+    cls <- seq_len(ncol(onehot))
+
+    cls[tmp]
+  }
 
   tmp <- t(onehot)
   which_onehot(idx, tmp, f_reduce, ret.sorted, ...)
