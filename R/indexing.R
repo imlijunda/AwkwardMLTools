@@ -16,9 +16,8 @@ MissingClass <- function(idx, idx_ref, onehot) {
     return(idx_ref)
   }
 
-  classes <- seq_len(ncol(onehot))
-  cls <- classes[as.logical(colSums(onehot[idx, , drop = FALSE]))]
-  cls_ref <- classes[as.logical(colSums(onehot[idx_ref, , drop = FALSE]))]
+  cls <- IdxToClass(idx, onehot)
+  cls_ref <- IdxToClass(idx_ref, onehot)
 
   setdiff(cls_ref, cls)
 }

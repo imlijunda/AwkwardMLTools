@@ -65,6 +65,10 @@ DecodeOnehot <- function(onehot, value_offset) {
 ClassToIdx <- function(cls, onehot, f_reduce = NULL, ret.sorted = FALSE,
                        fast = TRUE, ...) {
 
+  if (is.null(cls)) {
+    return(integer())
+  }
+
   if (is.null(f_reduce) && fast) {
     tmp <- as.logical(colSums(t(onehot[, cls, drop = FALSE])))
     idx <- seq_len(nrow(onehot))
@@ -90,6 +94,10 @@ ClassToIdx <- function(cls, onehot, f_reduce = NULL, ret.sorted = FALSE,
 #'
 IdxToClass <- function(idx, onehot, f_reduce = NULL, ret.sorted = FALSE,
                        fast = TRUE, ...) {
+
+  if (is.null(idx)) {
+    return(integer())
+  }
 
   if (is.null(f_reduce) && fast) {
     tmp <- as.logical(colSums(onehot[idx, , drop = FALSE]))
