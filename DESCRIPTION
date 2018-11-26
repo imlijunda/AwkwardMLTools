@@ -1,0 +1,11 @@
+Package: AwkwardMLTools
+Type: Package
+Title: Awkward ML Tools
+Version: 0.0.1
+Author: Jun
+Maintainer: Jun <imlijunda@gmail.com>
+Description: A collection of functions for machine learning data processing.
+    For awkward or peculiar scenarios.
+License: MIT
+Encoding: UTF-8
+LazyData: true
