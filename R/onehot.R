@@ -11,6 +11,14 @@ EncodeClassList <- function(cls_list,
                             nclass = length(unique(unlist(cls_list))),
                             value_offset = 1L - min(unlist(cls_list))) {
 
+  if (is.character(cls_list[[1]])) {
+    cls_list <- lapply(cls_list,
+                       function(x) as.integer(
+                         strsplit(x, " ", fixed = TRUE)[[1]]
+                         )
+                       )
+  }
+
   nrows <- length(cls_list)
   ncols <- nclass
   onehot <- matrix(0L, nrow = nrows, ncol = ncols)
@@ -74,9 +82,9 @@ IdxToClass <- function(idx, onehot, f_reduce = NULL, ret.sorted = FALSE, ...) {
   which_onehot(idx, tmp, f_reduce, ret.sorted, ...)
 }
 
-which_onehot <- function(x, onehot, f_reduce, ret.sorted) {
+which_onehot <- function(x, onehot, f_reduce, ret.sorted, ...) {
 
-  idx <- purrr::map(x, function(t) which(as.integer(onehot[, t])))
+  idx <- purrr::map(x, function(t) which(as.logical(onehot[, t])))
   if (is.null(f_reduce)) {
     ret <- unique(unlist(idx))
   } else {
