@@ -44,7 +44,7 @@ LoadPNGChan <- function(channels, h = NULL, w = NULL, ret.flatten = FALSE) {
 #'
 #' @param files a list of filenames or a list of channel filenames.
 #' @param h height of image.
-#' @param w width of image
+#' @param w width of image.
 #' @param nch total channels of image.
 #' @param file_idx_first whether to put file index in fisrt dimension, otherwise it's put in last dim.
 #'
@@ -65,4 +65,27 @@ LoadPNGList <- function(files, h, w, nch, file_idx_first = TRUE) {
   }
 
   all_img
+}
+
+
+#' Estimate memory usage of images.
+#'
+#' @param n number of images to load.
+#' @param h height of image.
+#' @param w width of image.
+#' @param nch number of channels.
+#' @param unit what unit to use, "k" for KB and "g" for GB, otherwise bytes.
+#'
+#' @return a numeric.
+#' @export
+#'
+EstimateMem <- function(n, h, w, nch, unit = "k") {
+
+  mem_bit <- 8.0 * h * w * nch * n
+  mem <- switch(substr(toupper(unit), 1L, 1L),
+                K = mem_bit / 1024.0,
+                G = mem_bit / 1048576.0,
+                mem_bit) / 1024.0
+
+  mem
 }

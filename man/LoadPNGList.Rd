@@ -11,7 +11,7 @@ LoadPNGList(files, h, w, nch, file_idx_first = TRUE)
 
 \item{h}{height of image.}
 
-\item{w}{width of image}
+\item{w}{width of image.}
 
 \item{nch}{total channels of image.}
 
