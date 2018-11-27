@@ -14,10 +14,13 @@ err_null_arg <- function(arg) {
   err(msg)
 }
 
-err_invalid_value <- function(var) {
+err_invalid_value <- function(var, elaborate = NULL) {
 
   var_name <- as.character(substitute(var))
   msg <- sprintf("Invalid value of %s: %s", var_name, toString(var))
+  if (!is.null(elaborate)) {
+    msg <- paste0(msg, " -- ", elaborate)
+  }
 
   err(msg)
 }
