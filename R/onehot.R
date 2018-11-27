@@ -1,15 +1,13 @@
 #' Encode a list of classes to a onehot table.
 #'
 #' @param cls_list a list of integer classes.
-#' @param nclass number of classes.
-#' @param value_offset a value to offset smaller than 1 values in cls_list.
+#' @param nclass OPTIONAL, number of classes.
+#' @param value_offset OPTIONAL, a value to offset smaller than 1 values in cls_list.
 #'
 #' @return a onehot table.
 #' @export
 #'
-EncodeClassList <- function(cls_list,
-                            nclass = length(unique(unlist(cls_list))),
-                            value_offset = 1L - min(unlist(cls_list))) {
+EncodeClassList <- function(cls_list, nclass = NULL, value_offset = NULL) {
 
   if (is.character(cls_list[[1]])) {
     cls_list <- lapply(cls_list,
@@ -19,10 +17,14 @@ EncodeClassList <- function(cls_list,
                        )
   }
 
-  nrows <- length(cls_list)
-  ncols <- nclass
-  onehot <- matrix(0L, nrow = nrows, ncol = ncols)
+  if (is.null(nclass)) {
+    nclass <- length(unique(unlist(cls_list)))
+  }
+  if (is.null(value_offset)) {
+    value_offset <- 1L - min(unlist(cls_list))
+  }
 
+  onehot <- matrix(0L, nrow = length(cls_list), ncol = nclass)
   for (i in seq_along(cls_list)) {
     hot_idx <- cls_list[[i]] + value_offset
     onehot[i, hot_idx] <- 1L

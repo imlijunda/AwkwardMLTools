@@ -18,7 +18,7 @@ EstimateMem(n, h, w, nch, unit = "k")
 \item{unit}{what unit to use, "k" for KB and "g" for GB, otherwise bytes.}
 }
 \value{
-a numeric
+a numeric.
 }
 \description{
 Estimate memory usage of images.
