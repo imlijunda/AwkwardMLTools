@@ -2,12 +2,12 @@
 % Please edit documentation in R/onehot.R
 \name{RelatedIdx}
 \alias{RelatedIdx}
-\title{Find all related indices.}
+\title{Find all related sample indices.}
 \usage{
 RelatedIdx(idx, onehot, ...)
 }
 \arguments{
-\item{idx}{a vector of indices.}
+\item{idx}{a vector of sample indices.}
 
 \item{onehot}{a onehot table.}
 
@@ -17,5 +17,5 @@ RelatedIdx(idx, onehot, ...)
 a vector of indices.
 }
 \description{
-By related indices I mean all indices that share a same class.
+Related samples are those contain same classes.
 }

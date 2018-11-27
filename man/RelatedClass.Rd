@@ -17,5 +17,5 @@ RelatedClass(cls, onehot, ...)
 a vector of classes.
 }
 \description{
-By related classes I mean all classes that share a same index.
+Related classes are those appeared in same samples.
 }

@@ -7,7 +7,7 @@
 ScarceClass(threshold, onehot)
 }
 \arguments{
-\item{threshold}{a threshold, any number of idx < threshold will return.}
+\item{threshold}{a threshold, any number of samples < threshold will return.}
 
 \item{onehot}{a onehot table.}
 }

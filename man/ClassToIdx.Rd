@@ -2,7 +2,7 @@
 % Please edit documentation in R/onehot.R
 \name{ClassToIdx}
 \alias{ClassToIdx}
-\title{Get hot indices from classes.}
+\title{Get hot sample indices from classes.}
 \usage{
 ClassToIdx(cls, onehot, f_reduce = NULL, ret.sorted = FALSE,
   fast = TRUE, ...)
@@ -25,5 +25,5 @@ always sorted in this case.}
 a vector of indices.
 }
 \description{
-Get hot indices from classes.
+Get hot sample indices from classes.
 }

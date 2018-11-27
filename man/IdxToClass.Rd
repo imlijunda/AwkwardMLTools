@@ -2,13 +2,13 @@
 % Please edit documentation in R/onehot.R
 \name{IdxToClass}
 \alias{IdxToClass}
-\title{Get hot classes from indices}
+\title{Get hot classes from sample indices.}
 \usage{
 IdxToClass(idx, onehot, f_reduce = NULL, ret.sorted = FALSE,
   fast = TRUE, ...)
 }
 \arguments{
-\item{idx}{a vector of indices.}
+\item{idx}{a vector of sample indices.}
 
 \item{onehot}{a onehot table.}
 
@@ -25,5 +25,5 @@ always sorted in this case.}
 a vector of classes.
 }
 \description{
-Get hot classes from indices
+Get hot classes from sample indices.
 }

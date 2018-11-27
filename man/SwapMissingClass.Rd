@@ -8,13 +8,13 @@ SwapMissingClass(idx, idx_ref, onehot, swap_ratio = 0.1,
   swap_random = FALSE)
 }
 \arguments{
-\item{idx}{a vector of indices.}
+\item{idx}{a vector of sample indices.}
 
-\item{idx_ref}{a vector of indices.}
+\item{idx_ref}{a vector of reference sample indices.}
 
 \item{onehot}{a onehot table.}
 
-\item{swap_ratio}{ratio of swapped elements from idx_ref.}
+\item{swap_ratio}{ratio of swapped elements from reference samples.}
 
 \item{swap_random}{whether swapped elements are randomly selected by sample(),
 otherwise elements are selected in index order.}

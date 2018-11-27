@@ -2,18 +2,18 @@
 % Please edit documentation in R/onehot.R
 \name{CountClass}
 \alias{CountClass}
-\title{Count number of indices of each class.}
+\title{Count number of samples of each class.}
 \usage{
 CountClass(onehot, ret.density = FALSE)
 }
 \arguments{
 \item{onehot}{a onehot table.}
 
-\item{ret.density}{wheter to return density, otherwise number of indices.}
+\item{ret.density}{wheter to return density, otherwise number of samples.}
 }
 \value{
 a numeric vector.
 }
 \description{
-Count number of indices of each class.
+Count number of samples of each class.
 }

@@ -51,7 +51,7 @@ DecodeOnehot <- function(onehot, value_offset) {
   cls_list
 }
 
-#' Get hot indices from classes.
+#' Get hot sample indices from classes.
 #'
 #' @param cls a vector of classes.
 #' @param onehot a onehot table.
@@ -81,9 +81,9 @@ ClassToIdx <- function(cls, onehot, f_reduce = NULL, ret.sorted = FALSE,
   which_onehot(cls, onehot, f_reduce, ret.sorted, ...)
 }
 
-#' Get hot classes from indices
+#' Get hot classes from sample indices.
 #'
-#' @param idx a vector of indices.
+#' @param idx a vector of sample indices.
 #' @param onehot a onehot table.
 #' @param f_reduce function to reduce, if NULL, union is performed.
 #' @param ret.sorted return sorted classes.
@@ -130,7 +130,7 @@ which_onehot <- function(x, onehot, f_reduce, ret.sorted, ...) {
 
 #' Find all related classes.
 #'
-#' By related classes I mean all classes that share a same index.
+#' Related classes are those appeared in same samples.
 #'
 #' @param cls a vector of classes.
 #' @param onehot a onehot table.
@@ -146,11 +146,11 @@ RelatedClass <- function(cls, onehot, ...) {
     IdxToClass(onehot, ...)
 }
 
-#' Find all related indices.
+#' Find all related sample indices.
 #'
-#' By related indices I mean all indices that share a same class.
+#' Related samples are those contain same classes.
 #'
-#' @param idx a vector of indices.
+#' @param idx a vector of sample indices.
 #' @param onehot a onehot table.
 #' @param ... arguments passed to IdxToClass and ClassToIdx.
 #'
@@ -164,10 +164,10 @@ RelatedIdx <- function(idx, onehot, ...) {
     ClassToIdx(onehot, ...)
 }
 
-#' Count number of indices of each class.
+#' Count number of samples of each class.
 #'
 #' @param onehot a onehot table.
-#' @param ret.density wheter to return density, otherwise number of indices.
+#' @param ret.density wheter to return density, otherwise number of samples.
 #'
 #' @return a numeric vector.
 #' @export
@@ -184,7 +184,7 @@ CountClass <- function(onehot, ret.density = FALSE) {
 
 #' Find classes that is scarce.
 #'
-#' @param threshold a threshold, any number of idx < threshold will return.
+#' @param threshold a threshold, any number of samples < threshold will return.
 #' @param onehot a onehot table.
 #'
 #' @return an integer vector.

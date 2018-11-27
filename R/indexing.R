@@ -1,7 +1,7 @@
-#' Find missing classes in a set of indices compared to reference indices.
+#' Find missing classes in a set of samples compared to reference samples.
 #'
-#' @param idx a vector of indices.
-#' @param idx_ref a vector of indices.
+#' @param idx a vector of sample indices.
+#' @param idx_ref a vector of reference sample indices.
 #' @param onehot a onehot table.
 #'
 #' @return a vector of classes.
@@ -27,10 +27,10 @@ MissingClass <- function(idx, idx_ref, onehot) {
 #' Could be useful to re-construct idx and idx_ref with no missing classes. Set
 #' swap_ratio to 0 results in a relatively (but not globally) minimal swapping.
 #'
-#' @param idx a vector of indices.
-#' @param idx_ref a vector of indices.
+#' @param idx a vector of sample indices.
+#' @param idx_ref a vector of reference sample indices.
 #' @param onehot a onehot table.
-#' @param swap_ratio ratio of swapped elements from idx_ref.
+#' @param swap_ratio ratio of swapped elements from reference samples.
 #' @param swap_random whether swapped elements are randomly selected by sample(),
 #' otherwise elements are selected in index order.
 #'
