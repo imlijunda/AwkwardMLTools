@@ -27,7 +27,7 @@ err_invalid_value <- function(var, elaborate = NULL) {
 
 err_worker_stop <- function(pid) {
 
-  msg <- sprintf("Worker PID = %d has already stopped.", as.integer(pid))
+  msg <- sprintf("Worker PID = %s has already stopped.", toString(pid))
 
   err(msg)
 }

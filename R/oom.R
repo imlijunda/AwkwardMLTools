@@ -143,8 +143,114 @@ DataGeneratorNonblock <- function(loader, sample_ids, sample_cls = NULL, batch_s
   generator
 }
 
+#' @rdname DataGenerator
+#' @export
+DataGeneratorMultiProc <- function(loader, sample_ids, sample_cls = NULL, batch_size,
+                                   n_workers) {
+
+  if (batch_size * n_workers > length(sample_ids)) {
+    err_invalid_value(n_workers,
+                      elaborate = "too many workers for the batch size. Try reducing either.")
+  }
+
+  sample_ids <- unlist(sample_ids)
+  sample_cls <- unlist(sample_cls)
+  nsample <- length(sample_ids)
+
+  batch_mask <- 0L
+  update_batch_mask <- function() {
+    if (length(batch_mask) < batch_size) {
+      #reset loop
+      tmp <- seq_len(batch_size)
+    } else {
+      tmp <- (batch_mask + batch_size) %% nsample
+    }
+    tmp[tmp == 0L] <- nsample
+    tmp <- tmp[seq_len(which.max(tmp))]
+    batch_mask <<- tmp
+
+    tmp
+  }
+  worker_idx <- 0L
+  update_worker_idx <- function() {
+    tmp <- (worker_idx + 1L) %% n_workers
+    if (tmp == 0L) {
+      tmp <- n_workers
+    }
+    worker_idx <<- tmp
+
+    tmp
+  }
+
+  #create initial worker jobs
+  workers_proc <- list()
+  workers_mask <- list()
+  for (i in seq_len(n_workers)) {
+
+    update_batch_mask()
+    update_worker_idx()
+
+    workers_mask[[worker_idx]] <- batch_mask
+    workers_proc[[worker_idx]] <- parallel::mcparallel({
+      loader(sample_ids[batch_mask])
+    })
+  }
+
+  #simple process management
+  stopped <- FALSE
+
+  generator <- function(STOP = FALSE) {
+
+    #check stop state
+    if (stopped) {
+      pids <- NULL
+      for (w in workers_proc) {
+        pids <- c(pids, w$pid)
+      }
+      err_worker_stop(pids)
+    }
+
+    #update stop state
+    stopped <<- STOP
+    if (STOP) {
+      ret <- parallel::mccollect(workers_proc, wait = TRUE)
+      return(ret)
+    }
+
+    #get data from worker
+    update_worker_idx()
+    x <- parallel::mccollect(workers_proc[[worker_idx]], wait = TRUE)[[1]]
+    y <- sample_cls[workers_mask[[worker_idx]]]
+
+    #check for error
+    if (class(x) == "try-error") {
+      err_worker(x)
+    }
+
+    #start new worker
+    update_batch_mask()
+    workers_mask[[worker_idx]] <<- batch_mask
+    workers_proc[[worker_idx]] <<- parallel::mcparallel({
+      loader(sample_ids[batch_mask])
+    })
+
+    if (is.null(sample_cls)) {
+      return(list(x))
+    } else {
+      return(list(x, y))
+    }
+  }
+
+  generator
+}
+
 
 #' Stop a non-blocking generator worker process and cleanup.
+#'
+#' Because a generator loops indefinitely, when invoking a non-blocking generator,
+#' a child process is always forked in background loading next batch. Even though
+#' the generator is not need anymore. Calling this function results in stopping
+#' the child process and any consequence IO.
 #'
 #' This function might block since it waits for last worker to return. It has the
 #' same effect of calling generator(STOP = TRUE) but returns value invisibly with

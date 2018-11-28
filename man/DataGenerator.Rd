@@ -3,11 +3,15 @@
 \name{DataGenerator}
 \alias{DataGenerator}
 \alias{DataGeneratorNonblock}
+\alias{DataGeneratorMultiProc}
 \title{Wrap a loader function to a generator.}
 \usage{
 DataGenerator(loader, sample_ids, sample_cls = NULL, batch_size)
 
 DataGeneratorNonblock(loader, sample_ids, sample_cls = NULL, batch_size)
+
+DataGeneratorMultiProc(loader, sample_ids, sample_cls = NULL, batch_size,
+  n_workers)
 }
 \arguments{
 \item{loader}{a loader function that accepts a subset of sample_ids and returns
