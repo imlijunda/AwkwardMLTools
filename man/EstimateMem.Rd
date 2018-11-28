@@ -15,7 +15,8 @@ EstimateMem(n, h, w, nch, unit = "k")
 
 \item{nch}{number of channels.}
 
-\item{unit}{what unit to use, "k" for KB and "g" for GB, otherwise bytes.}
+\item{unit}{what unit to use, "k" for KB, "m" for MB and "g" for GB,
+otherwise bytes.}
 }
 \value{
 a numeric.

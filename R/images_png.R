@@ -74,18 +74,20 @@ LoadPNGList <- function(files, h, w, nch, file_idx_first = TRUE) {
 #' @param h height of image.
 #' @param w width of image.
 #' @param nch number of channels.
-#' @param unit what unit to use, "k" for KB and "g" for GB, otherwise bytes.
+#' @param unit what unit to use, "k" for KB, "m" for MB and "g" for GB,
+#' otherwise bytes.
 #'
 #' @return a numeric.
 #' @export
 #'
 EstimateMem <- function(n, h, w, nch, unit = "k") {
 
-  mem_bit <- 8.0 * h * w * nch * n
+  mem_byte <- 8.0 * h * w * nch * n
   mem <- switch(substr(toupper(unit), 1L, 1L),
-                K = mem_bit / 1024.0,
-                G = mem_bit / 1048576.0,
-                mem_bit) / 1024.0
+                K = mem_byte / 1024.0,
+                M = mem_byte / 1048576.0,
+                G = mem_byte / 1073741824.0,
+                mem_byte)
 
   mem
 }
