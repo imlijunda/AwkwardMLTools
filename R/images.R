@@ -20,7 +20,7 @@
 LoadImage <- function(files, loader, h = NULL, w = NULL, nch = NULL,
                       channel_last = TRUE, ret.flatten = FALSE) {
 
-  files <- as.character(unlist(files))
+  files <- unlist(files)
 
   #determine h, w if needed
   if (!ret.flatten && (is.null(h) || is.null(w))) {
