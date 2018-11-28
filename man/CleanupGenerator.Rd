@@ -13,6 +13,12 @@ CleanupGenerator(generator)
 last result from generator(), invisibly.
 }
 \description{
+Because a generator loops indefinitely, when invoking a non-blocking generator,
+a child process is always forked in background loading next batch. Even though
+the generator is not need anymore. Calling this function results in stopping
+the child process and any consequence IO.
+}
+\details{
 This function might block since it waits for last worker to return. It has the
 same effect of calling generator(STOP = TRUE) but returns value invisibly with
 an extra call to gc().
