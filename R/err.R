@@ -24,3 +24,17 @@ err_invalid_value <- function(var, elaborate = NULL) {
 
   err(msg)
 }
+
+err_worker_stop <- function(pid) {
+
+  msg <- sprintf("Worker PID = %d has already stopped.", as.integer(pid))
+
+  err(msg)
+}
+
+err_worker <- function(info) {
+
+  msg <- sprintf("Worker returned try-error: %s", toString(info))
+
+  err(msg)
+}

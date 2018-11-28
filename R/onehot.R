@@ -33,7 +33,7 @@ EncodeClassList <- function(cls_list, nclass = NULL, value_offset = NULL) {
   onehot
 }
 
-#' Decode a onehot table to a list of classes
+#' Decode a onehot table to a list of classes.
 #'
 #' @param onehot a onehot table.
 #' @param value_offset the offset value used to encode onehot table.

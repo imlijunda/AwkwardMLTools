@@ -2,7 +2,7 @@
 % Please edit documentation in R/onehot.R
 \name{DecodeOnehot}
 \alias{DecodeOnehot}
-\title{Decode a onehot table to a list of classes}
+\title{Decode a onehot table to a list of classes.}
 \usage{
 DecodeOnehot(onehot, value_offset)
 }
@@ -15,5 +15,5 @@ DecodeOnehot(onehot, value_offset)
 a list of integer classes
 }
 \description{
-Decode a onehot table to a list of classes
+Decode a onehot table to a list of classes.
 }
