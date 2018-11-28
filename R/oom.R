@@ -120,7 +120,21 @@ DataGeneratorNonblock <- function(loader, sample_ids, sample_cls = NULL, batch_s
 
     #check for error
     if (class(x) == "try-error") {
+
+      stopped <<- TRUE
+      parallel:::rmChild(worker$pid)
+
       err_worker(x)
+    }
+
+    #check for NULL
+    if (is.null(x)) {
+
+      #could be a problem of loader, or the child process is killed.
+      stopped <<- TRUE
+      parallel:::rmChild(worker$pid)
+
+      err_worker_null(worker$pid)
     }
 
     #update batch_idx
@@ -140,7 +154,17 @@ DataGeneratorNonblock <- function(loader, sample_ids, sample_cls = NULL, batch_s
     }
   }
 
-  generator
+  #BUG: fork.c throws warnings in mc_select_children about process not existing
+  #when multiple child processes are forked.
+  if (getRversion() >= "3.5.0" && getRversion() <= "3.5.1") {
+    f <- function(STOP = FALSE) {
+      suppressWarnings(generator(STOP))
+    }
+  } else {
+    f <- generator
+  }
+
+  f
 }
 
 #' @rdname DataGenerator
@@ -224,7 +248,25 @@ DataGeneratorMultiProc <- function(loader, sample_ids, sample_cls = NULL, batch_
 
     #check for error
     if (class(x) == "try-error") {
+
+      stopped <<- TRUE
+      for (worker in workers_proc) {
+        parallel:::rmChild(worker$pid)
+      }
+
       err_worker(x)
+    }
+
+    #check for NULL
+    if (is.null(x)) {
+
+      #could be a problem of loader, or the child process is killed.
+      stopped <<- TRUE
+      for (worker in workers_proc) {
+        parallel:::rmChild(worker$pid)
+      }
+
+      err_worker_null(workers_proc[[worker_idx]]$pid)
     }
 
     #start new worker
@@ -241,7 +283,17 @@ DataGeneratorMultiProc <- function(loader, sample_ids, sample_cls = NULL, batch_
     }
   }
 
-  generator
+  #BUG: fork.c throws warnings in mc_select_children about process not existing
+  #when multiple child processes are forked.
+  if (getRversion() >= "3.5.0" && getRversion() <= "3.5.1") {
+    f <- function(STOP = FALSE) {
+      suppressWarnings(generator(STOP))
+    }
+  } else {
+    f <- generator
+  }
+
+  f
 }
 
 

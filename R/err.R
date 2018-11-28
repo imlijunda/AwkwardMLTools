@@ -25,6 +25,13 @@ err_invalid_value <- function(var, elaborate = NULL) {
   err(msg)
 }
 
+err_worker_null <- function(pid) {
+
+  msg <- sprintf("Worker PID = %s returned NULL. Stopping all forked processes.", toString(pid))
+
+  err(msg)
+}
+
 err_worker_stop <- function(pid) {
 
   msg <- sprintf("Worker PID = %s has already stopped.", toString(pid))
