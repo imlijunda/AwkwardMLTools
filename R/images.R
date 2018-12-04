@@ -64,33 +64,39 @@ LoadImage <- function(files, loader, h = NULL, w = NULL, nch = NULL,
 #'
 #' @param files a list of files or a list of files by channel.
 #' @param loader a function to load the images.
-#' @param h height of images.
-#' @param w width of images.
+#' @param h height of images. Ignored if ret.flatten.
+#' @param w width of images. Ignored if ret.flatten.
 #' @param nch number of channels of each image.
 #' @param channel_last whether the images are channel_last format. Default: TRUE
 #' @param batch_last whether the batch is indexed in last dimension. Default: FALSE
+#' @param ret.flatten whether to return flatten image vectors. Default: FALSE
 #'
 #' @return a 4-d array.
 #' @export
 #'
 LoadImageBatch <- function(files, loader, h, w, nch, channel_last = TRUE,
-                           batch_last = FALSE) {
+                           batch_last = FALSE, ret.flatten = FALSE) {
 
   n <- length(files)
   all_img <- sapply(X = files, FUN = LoadImage,
                     loader = loader, channel_last = channel_last, ret.flatten = TRUE)
+  if (ret.flatten) {
+    imghw <- dim(all_img)[1L] %/% nch
+  } else {
+    imghw <- c(h, w)
+  }
   if (batch_last) {
     if (channel_last) {
-      dim(all_img) <- c(h, w, nch, n)
+      dim(all_img) <- c(imghw, nch, n)
     } else {
-      dim(all_img) <- c(nch, h, w, n)
+      dim(all_img) <- c(nch, imghw, n)
     }
   } else {
     all_img <- t(all_img)
     if (channel_last) {
-      dim(all_img) <- c(n, h, w, nch)
+      dim(all_img) <- c(n, imghw, nch)
     } else {
-      dim(all_img) <- c(n, nch, h, w)
+      dim(all_img) <- c(n, nch, imghw)
     }
   }
 

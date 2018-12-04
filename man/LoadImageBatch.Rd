@@ -6,24 +6,27 @@
 \title{Load a batch of images.}
 \usage{
 LoadImageBatch(files, loader, h, w, nch, channel_last = TRUE,
-  batch_last = FALSE)
+  batch_last = FALSE, ret.flatten = FALSE)
 
-LoadPNGBatch(files, h, w, nch, channel_last = TRUE, batch_last = FALSE)
+LoadPNGBatch(files, h, w, nch, channel_last = TRUE, batch_last = FALSE,
+  ret.flatten = FALSE)
 }
 \arguments{
 \item{files}{a list of files or a list of files by channel.}
 
 \item{loader}{a function to load the images.}
 
-\item{h}{height of images.}
+\item{h}{height of images. Ignored if ret.flatten.}
 
-\item{w}{width of images.}
+\item{w}{width of images. Ignored if ret.flatten.}
 
 \item{nch}{number of channels of each image.}
 
 \item{channel_last}{whether the images are channel_last format. Default: TRUE}
 
 \item{batch_last}{whether the batch is indexed in last dimension. Default: FALSE}
+
+\item{ret.flatten}{whether to return flatten image vectors. Default: FALSE}
 }
 \value{
 a 4-d array.

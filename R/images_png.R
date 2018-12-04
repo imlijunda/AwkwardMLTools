@@ -12,9 +12,10 @@ LoadPNG <- function(files, h = NULL, w = NULL, nch = NULL,
 #' @export
 #'
 LoadPNGBatch <- function(files, h, w, nch, channel_last = TRUE,
-                         batch_last = FALSE) {
+                         batch_last = FALSE, ret.flatten = FALSE) {
 
   LoadImageBatch(files, loader = png::readPNG, h = h, w = w, nch = nch,
-                 channel_last = channel_last, batch_last = batch_last)
+                 channel_last = channel_last, batch_last = batch_last,
+                 ret.flatten = ret.flatten)
 }
 
