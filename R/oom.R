@@ -42,29 +42,20 @@
 #'
 DataGenerator <- function(loader, sample_ids, sample_cls = NULL, batch_size) {
 
-  if (batch_size > length(sample_ids)) {
-    err_invalid_value(batch_size,
-                      elaborate = "batch size too large for samples.")
-  }
-
   sample_ids <- unlist(sample_ids)
   sample_cls <- unlist(sample_cls)
-  nsample <- length(sample_ids)
 
-  #initial state
-  idx <- batch_size + 1L
-  batch_idx <- seq_len(batch_size)
+  if (batch_size > length(sample_ids)) {
+    err_invalid_value(batch_size, "batch size larger than sample size.")
+  }
+
+  next_batch_idx <- iterator_batch(seq_along(sample_ids), batch_size)
 
   generator <- function() {
 
-    #get data from loader
-    x <- loader(sample_ids[batch_idx])
-    y <- sample_cls[batch_idx]
-
-    #update batch_idx
-    idx_end <- min(nsample, idx + batch_size - 1L)
-    batch_idx <<- seq.int(idx, idx_end)
-    idx <<- ifelse(idx_end == nsample, 1L, idx_end + 1L)
+    bidx <- next_batch_idx()
+    x <- loader(sample_ids[bidx])
+    y <- sample_cls[bidx]
 
     if (is.null(sample_cls)) {
       return(list(x))
@@ -80,91 +71,8 @@ DataGenerator <- function(loader, sample_ids, sample_cls = NULL, batch_size) {
 #' @export
 DataGeneratorNonblock <- function(loader, sample_ids, sample_cls = NULL, batch_size) {
 
-  if (batch_size > length(sample_ids)) {
-    err_invalid_value(batch_size,
-                      elaborate = "batch size too large for samples.")
-  }
-
-  sample_ids <- unlist(sample_ids)
-  sample_cls <- unlist(sample_cls)
-  nsample <- length(sample_ids)
-
-  #initial state
-  idx <- batch_size + 1L
-  batch_idx <- seq_len(batch_size)
-  worker <- parallel::mcparallel({
-    loader(sample_ids[batch_idx])
-  })
-
-  #simple process management
-  stopped <- FALSE
-
-  generator <- function(STOP = FALSE) {
-
-    #check stop state
-    if (stopped) {
-      err_worker_stop(worker$pid)
-    }
-
-    #update stop state
-    stopped <<- STOP
-    if (STOP) {
-      #received user instruction to stop, collect remaining result and stop
-      ret <- parallel::mccollect(worker, wait = TRUE)[[1]]
-      return(ret)
-    }
-
-    #get data from worker
-    x <- parallel::mccollect(worker, wait = TRUE)[[1]]
-    y <- sample_cls[batch_idx]
-
-    #check for error
-    if (class(x) == "try-error") {
-
-      stopped <<- TRUE
-      parallel:::rmChild(worker$pid)
-
-      err_worker(x)
-    }
-
-    #check for NULL
-    if (is.null(x)) {
-
-      #could be a problem of loader, or the child process is killed.
-      stopped <<- TRUE
-      parallel:::rmChild(worker$pid)
-
-      err_worker_null(worker$pid)
-    }
-
-    #update batch_idx
-    idx_end <- min(nsample, idx + batch_size - 1L)
-    batch_idx <<- seq.int(idx, idx_end)
-    idx <<- ifelse(idx_end == nsample, 1L, idx_end + 1L)
-
-    #start new worker
-    worker <<- parallel::mcparallel({
-      loader(sample_ids[batch_idx])
-    })
-
-    if (is.null(sample_cls)) {
-      return(list(x))
-    } else {
-      return(list(x, y))
-    }
-  }
-
-  #BUG: fork.c throws warnings in mc_select_children about process not existing
-  #when multiple child processes are forked.
-  if (getRversion() >= "3.5.0" && getRversion() <= "3.5.1") {
-    f <- function(STOP = FALSE) {
-      suppressWarnings(generator(STOP))
-    }
-  } else {
-    f <- generator
-  }
-
-  f
+  DataGeneratorMultiProc(loader, sample_ids = sample_ids, sample_cls = sample_cls,
+                         batch_size = batch_size, n_workers = 1L)
 }
 
 #' @rdname DataGenerator
@@ -172,109 +80,94 @@ DataGeneratorNonblock <- function(loader, sample_ids, sample_cls = NULL, batch_s
 DataGeneratorMultiProc <- function(loader, sample_ids, sample_cls = NULL, batch_size,
                                    n_workers) {
 
-  if (batch_size * n_workers > length(sample_ids)) {
-    err_invalid_value(n_workers,
-                      elaborate = "too many workers for the batch size. Try reducing either.")
-  }
-
   sample_ids <- unlist(sample_ids)
   sample_cls <- unlist(sample_cls)
-  nsample <- length(sample_ids)
 
-  batch_mask <- 0L
-  update_batch_mask <- function() {
-    if (length(batch_mask) < batch_size) {
-      #reset loop
-      tmp <- seq_len(batch_size)
-    } else {
-      tmp <- (batch_mask + batch_size) %% nsample
-    }
-    tmp[tmp == 0L] <- nsample
-    tmp <- tmp[seq_len(which.max(tmp))]
-    batch_mask <<- tmp
-
-    tmp
+  if (batch_size > length(sample_ids)) {
+    err_invalid_value(batch_size, "batch size larger than sample size.")
   }
-  worker_idx <- 0L
-  update_worker_idx <- function() {
-    tmp <- (worker_idx + 1L) %% n_workers
-    if (tmp == 0L) {
-      tmp <- n_workers
-    }
-    worker_idx <<- tmp
-
-    tmp
+  if (batch_size * n_workers > length(sample_ids)) {
+    n_workers <- length(sample_ids) %/% batch_size
+    msg <- sprintf("n_workers reduced to %d.", n_workers)
+    warning(msg)
   }
+
+  next_batch_idx <- iterator_batch(seq_along(sample_ids), batch_size)
+  next_worker_idx <- iterator_atomic(seq_len(n_workers))
 
   #create initial worker jobs
-  workers_proc <- list()
-  workers_mask <- list()
+  workers <- list()
   for (i in seq_len(n_workers)) {
-
-    update_batch_mask()
-    update_worker_idx()
-
-    workers_mask[[worker_idx]] <- batch_mask
-    workers_proc[[worker_idx]] <- parallel::mcparallel({
-      loader(sample_ids[batch_mask])
+    widx <- next_worker_idx()
+    bidx <- next_batch_idx()
+    workers[[widx]] <- list()
+    workers[[widx]]$proc <- parallel::mcparallel({
+      loader(sample_ids[bidx])
     })
+    workers[[widx]]$batch_idx <- bidx
   }
 
-  #simple process management
   stopped <- FALSE
 
-  generator <- function(STOP = FALSE) {
+  force_stop <- function() {
+    for (worker in workers) {
+      parallel:::rmChild(worker$proc$pid)
+    }
+    stopped <<- TRUE
 
+    NULL
+  }
+
+  check_stop <- function() {
     #check stop state
     if (stopped) {
       pids <- NULL
-      for (w in workers_proc) {
-        pids <- c(pids, w$pid)
+      for (worker in workers) {
+        pids <- c(pids, worker$proc$pid)
       }
       err_worker_stop(pids)
     }
 
+    NULL
+  }
+
+  check_val <- function(x, widx) {
+    #check for error
+    if (class(x) == "try-error") {
+      force_stop()
+      err_worker(x)
+    }
+    #check for NULL
+    if (is.null(x)) {
+      #could be a problem of loader, or the child process is killed.
+      force_stop()
+      err_worker_null(workers[[widx]]$proc$pid)
+    }
+
+    NULL
+  }
+
+  generator <- function(STOP = FALSE) {
+
+    check_stop()
     #update stop state
-    stopped <<- STOP
     if (STOP) {
-      ret <- parallel::mccollect(workers_proc, wait = TRUE)
-      return(ret)
+      force_stop()
+      return(NULL)
     }
 
     #get data from worker
-    update_worker_idx()
-    x <- parallel::mccollect(workers_proc[[worker_idx]], wait = TRUE)[[1]]
-    y <- sample_cls[workers_mask[[worker_idx]]]
-
-    #check for error
-    if (class(x) == "try-error") {
-
-      stopped <<- TRUE
-      for (worker in workers_proc) {
-        parallel:::rmChild(worker$pid)
-      }
-
-      err_worker(x)
-    }
-
-    #check for NULL
-    if (is.null(x)) {
-
-      #could be a problem of loader, or the child process is killed.
-      stopped <<- TRUE
-      for (worker in workers_proc) {
-        parallel:::rmChild(worker$pid)
-      }
-
-      err_worker_null(workers_proc[[worker_idx]]$pid)
-    }
+    widx <- next_worker_idx()
+    bidx <- next_batch_idx()
+    x <- parallel::mccollect(workers[[widx]]$proc, wait = TRUE)[[1]]
+    y <- sample_cls[workers[[widx]]$batch_idx]
+    check_val(x, widx)
 
     #start new worker
-    update_batch_mask()
-    workers_mask[[worker_idx]] <<- batch_mask
-    workers_proc[[worker_idx]] <<- parallel::mcparallel({
-      loader(sample_ids[batch_mask])
+    workers[[widx]]$proc <<- parallel::mcparallel({
+      loader(sample_ids[bidx])
     })
+    workers[[widx]]$batch_idx <<- bidx
 
     if (is.null(sample_cls)) {
       return(list(x))
@@ -315,7 +208,11 @@ DataGeneratorMultiProc <- function(loader, sample_ids, sample_cls = NULL, batch_
 #'
 CleanupGenerator <- function(generator){
 
-  invisible(generator(TRUE))
+  generator(TRUE)
 
-  gc()
+  name <- as.character(substitute(generator))
+  penv <- parent.frame()
+  rm(list = name, envir = penv)
+
+  NULL
 }
