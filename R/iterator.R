@@ -1,24 +1,19 @@
 iterator_atomic <- function(x) {
 
-  len <- length(x)
-  if (!len) {
+  idx <- 0L
+  n <- length(x)
+  if (!n) {
     err_invalid_value(x, "argument is of zero length.")
   }
-  idx <- 1L
-  next_idx <- function() {
-    if (idx == len) {
+
+  iter <- function() {
+    if (idx == n) {
       idx <<- 1L
     } else {
       idx <<- idx + 1L
     }
-  }
 
-  iter <- function() {
-
-    i <- idx
-    next_idx()
-
-    x[i]
+    x[idx]
   }
 
   iter
@@ -30,82 +25,81 @@ iterator_batch <- function(x, batch_size = 1L) {
     return(iterator_atomic(x))
   }
 
-  len <- length(x)
-  if (batch_size > len) {
+  n <- length(x)
+  if (!n) {
+    err_invalid_value(x, "argument is of zero length.")
+  }
+  if (batch_size > n) {
     err_invalid_value(batch_size, "batch size is larger than iterator.")
   }
 
-  idx_start <- 1L
-  idx_end <- batch_size
-  next_idx <- function() {
-    if (idx_end == len) {
+  idx_start <- 0L
+  idx_end <- 0L
+  iter <- function() {
+    if (idx_end == n) {
       idx_start <<- 1L
     } else {
       idx_start <<- idx_end + 1L
     }
     tmp <- idx_start + batch_size - 1L
-    if (tmp > len) {
-      idx_end <<- len
+    if (tmp > n) {
+      idx_end <<- n
     } else {
       idx_end <<- tmp
     }
-  }
 
-  iter <- function() {
-
-    batch <- seq.int(idx_start, idx_end)
-    next_idx()
-
-    x[batch]
+    x[seq.int(idx_start, idx_end)]
   }
 
   iter
 }
 
-iterator_combi <- function(...) {
+iterator_inner <- function(x, iter) {
+
+  idx <- 0L
+  n <- length(x)
+  if (!n) {
+    err_invalid_value(x, "argument is of zero length.")
+  }
+
+  elem_left <- iter()
+  elem_right <- x[1]
+
+  iter_left <- function() {
+    if (idx == n) {
+      idx <<- 1L
+      elem_left <<- iter()
+    } else {
+      idx <<- idx + 1L
+    }
+    elem_right <<- x[idx]
+
+    c(elem_left, elem_right)
+  }
+
+  iter_left
+}
+
+iterator_product <- function(...) {
 
   args <- list(...)
-  if (!length(args)) err_iterator_args()
-  args_len <- sapply(args, length, USE.NAMES = FALSE)
-  args_num <- length(args)
-
-  idx <- rep(1L, args_num)
-  idx[1] <- 0L
-  done <- FALSE
-
-  itr <- vector(mode = "list", length = args_num)
-  names(itr) <- names(args)
-
-  iter <- function(reset = FALSE) {
-
-    if (reset) {
-      idx <<- rep(1L, args_num)
-      idx[1] <<- 0L
-      done <<- FALSE
-      return(NULL)
+  n <- length(args)
+  if (!n) {
+    err_invalid_value(args, "argument is of zero length.")
+  }
+  for (i in seq_len(n)) {
+    if (!is.vector(args[[i]])) {
+      #TODO: fix error message
+      arg_class <- class(args[[i]])
+      err_invalid_value(arg_class, "is not iterable atomic vector.")
     }
+  }
 
-    if (done) {
-      return(NULL)
+  iter <- iterator_atomic(args[[1]])
+  if (n > 1L) {
+    for (i in seq(2L, n)) {
+      iter <- iterator_inner(args[[i]], iter)
     }
-
-    idx[1] <<- idx[1] + 1L
-    for (i in seq_len(args_num)) {
-      if (idx[i] > args_len[i]) {
-        if (i == args_num) {
-          done <<- TRUE
-          return(NULL)
-        }
-        idx[i] <<- 1L
-        idx[i + 1] <<- idx[i + 1] + 1L
-      }
-    }
-
-    for (i in seq_len(args_num)) {
-      itr[[i]] <<- args[[i]][[idx[i]]]
-    }
-
-    itr
   }
 
   iter
