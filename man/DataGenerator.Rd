@@ -22,6 +22,8 @@ loaded data. See Details for more information.}
 \item{sample_cls}{OPTIONAL, a vector of classes returned as y.}
 
 \item{batch_size}{an integer of batch size.}
+
+\item{n_workers}{number of workers in case of DataGeneratorMultiProc}
 }
 \value{
 a generator function

@@ -25,6 +25,17 @@ err_invalid_value <- function(var, elaborate = NULL) {
   err(msg)
 }
 
+err_invalid_class <- function(var, elaborate = NULL) {
+
+  var_name <- as.character(substitute(var))
+  msg <- sprintf("Invalid class of %s: %s", var_name, class(var))
+  if (!is.null(elaborate)) {
+    msg <- paste0(msg, " ", elaborate)
+  }
+
+  err(msg)
+}
+
 err_worker_null <- function(pid) {
 
   msg <- sprintf("Worker PID = %s returned NULL. Stopping all forked processes.", toString(pid))
@@ -42,20 +53,6 @@ err_worker_stop <- function(pid) {
 err_worker <- function(info) {
 
   msg <- sprintf("Worker returned try-error: %s", toString(info))
-
-  err(msg)
-}
-
-err_iterator_args <- function() {
-
-  msg <- sprintf("At least one argument is needed to iterate.")
-
-  err(msg)
-}
-
-err_iterator_name <- function() {
-
-  msg <- sprintf("All arguments must be named.")
 
   err(msg)
 }

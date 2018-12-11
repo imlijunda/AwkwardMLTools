@@ -6,8 +6,8 @@ Author: Jun
 Maintainer: Jun <imlijunda@gmail.com>
 Description: A collection of functions for machine learning data processing.
     For awkward or peculiar scenarios.
-Imports: magrittr, purrr, png, parallel
-License: MIT
+Imports: methods, magrittr, purrr, png, parallel
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1

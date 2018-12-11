@@ -36,6 +36,7 @@
 #' @param sample_ids a vector of ids passed to loader.
 #' @param sample_cls OPTIONAL, a vector of classes returned as y.
 #' @param batch_size an integer of batch size.
+#' @param n_workers number of workers in case of DataGeneratorMultiProc
 #'
 #' @return a generator function
 #' @export

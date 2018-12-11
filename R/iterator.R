@@ -1,4 +1,24 @@
+#basic iterators
+
+#' Create iterator over an atomic vector.
+#'
+#' @param x an iterable atomic vector.
+#'
+#' @return an iterator.
+#' @export
+#'
+#' @examples
+#' itr <- iterator_atomic(3:5)
+#' #Created iterator loops indefinitely.
+#' print(collect(itr, 10))
+#' itr <- iterator_atomic(c("a", "b", "c", "d"))
+#' itr()
 iterator_atomic <- function(x) {
+
+  x <- unlist(x)
+  if (!is.vector(x)) {
+    err_invalid_class(x, "is not iterable atomic vector.")
+  }
 
   idx <- 0L
   n <- length(x)
@@ -15,10 +35,24 @@ iterator_atomic <- function(x) {
 
     x[idx]
   }
+  attr(iter, "class") <- "iterator"
+  attr(iter, "size") <- n
 
   iter
 }
 
+#' Iterate over batch_size elements a time.
+#'
+#' @param x an iterable atomic vector.
+#' @param batch_size batch size.
+#' @param part_size partition size.
+#'
+#' @return an iterator.
+#' @export
+#'
+#' @examples
+#' itr <- iterator_batch(500:5000, 32)
+#' itr()
 iterator_batch <- function(x, batch_size = 1L) {
 
   if (batch_size == 1L) {
@@ -50,36 +84,108 @@ iterator_batch <- function(x, batch_size = 1L) {
 
     x[seq.int(idx_start, idx_end)]
   }
+  attr(iter, "class") <- "iterator"
+  attr(iter, "size") <- n %/% batch_size + as.logical(n %% batch_size)
 
   iter
 }
 
-iterator_inner <- function(x, iter) {
+#' @rdname iterator_batch
+#' @export
+iterator_partition <- function(x, part_size = 1L) {
 
-  idx <- 0L
-  n <- length(x)
-  if (!n) {
-    err_invalid_value(x, "argument is of zero length.")
+  iterator_batch(x, part_size)
+}
+
+#composite iterators
+
+#' Iterate over a list of iterators or atomic vectors. Zip style.
+#'
+#' @param ... iterators or atomic vectors.
+#'
+#' @return an iterator.
+#' @export
+#'
+#' @examples
+#' itr1 <- iterator_atomic(1:6)
+#' itr <- iterator_zip(itr1, 7:12)
+#' collect(itr, 10)
+#'
+#' #A warnning will be thrown if size of iterators are different.
+#' itr1 <- iterator_atomic(1:6)
+#' itr2 <- iterator_atomic(1:4)
+#' itr <- iterator_zip(itr1, itr2)
+#' collect(itr, 15)
+iterator_zip <- function(...) {
+
+  args <- list(...)
+  if (!length(args)) {
+    err_invalid_value(args, "argument is of zero length.")
+  }
+  for (i in seq_along(args)) {
+    if (!is.iterator(args[[i]])) {
+      args[[i]] <- iterator_atomic(args[[i]])
+    }
+  }
+  if (!assert_size(args)) {
+    warning("Iterators are of different sizes.")
   }
 
-  elem_left <- iter()
-  elem_right <- x[1]
+  empty <- list()
+  iter <- function() {
+    unlist(sapply(args, do.call, empty))
+  }
+  attr(iter, "class") <- "iterator"
+  attr(iter, "size") <- Reduce(lcm_, sapply(args, size), 1L)
 
-  iter_left <- function() {
+  iter
+}
+
+iterator_inner <- function(x, inner) {
+
+  if (!is.iterator(x)) {
+    x <- iterator_atomic(x)
+  }
+
+  idx <- 0L
+  n <- size(x)
+  elem_left <- inner()
+  elem_right <- NULL
+
+  iter_inner <- function() {
     if (idx == n) {
       idx <<- 1L
-      elem_left <<- iter()
+      elem_left <<- inner()
     } else {
       idx <<- idx + 1L
     }
-    elem_right <<- x[idx]
+    elem_right <<- x()
 
     c(elem_left, elem_right)
   }
+  attr(iter_inner, "class") <- "iterator"
+  attr(iter_inner, "size") <- n * size(inner)
 
-  iter_left
+  iter_inner
 }
 
+#' Iterate over a list of iterators or atomic vectors. Cartesian product style.
+#'
+#' @param ... iterators or atomic vectors.
+#'
+#' @return an iterator.
+#' @export
+#'
+#' @examples
+#' itr1 <- iterator_atomic(1:3)
+#' itr <- iterator_product(itr1, 1:2)
+#' collect(itr, 10)
+#'
+#' itr1 <- iterator_atomic(1:3)
+#' itr2 <- iterator_atomic(1:2)
+#' itr3 <- iterator_product(itr1, itr2)
+#' itr <- iterator_product(itr3, 5:8)
+#' collect(itr, 20)
 iterator_product <- function(...) {
 
   args <- list(...)
@@ -87,20 +193,40 @@ iterator_product <- function(...) {
   if (!n) {
     err_invalid_value(args, "argument is of zero length.")
   }
-  for (i in seq_len(n)) {
-    if (!is.vector(args[[i]])) {
-      #TODO: fix error message
-      arg_class <- class(args[[i]])
-      err_invalid_value(arg_class, "is not iterable atomic vector.")
+  for (i in seq_along(args)) {
+    if (!is.iterator(args[[i]])) {
+      args[[i]] <- iterator_atomic(args[[i]])
     }
   }
 
-  iter <- iterator_atomic(args[[1]])
+  iter <- args[[1]]
   if (n > 1L) {
-    for (i in seq(2L, n)) {
+    for (i in seq.int(2L, n)) {
       iter <- iterator_inner(args[[i]], iter)
     }
   }
 
   iter
+}
+
+#' Create a counter that counts forever (before overflowing).
+#'
+#' @param start counter start
+#' @param step step size
+#'
+#' @return a counter function.
+#' @export
+#'
+#' @examples
+#' ctr <- counter(1, .5)
+#' collect(ctr, 10)
+counter <- function(start = 1L, step = 1L) {
+
+  x <- start - step
+  dx <- step
+
+  function() {
+    x <<- x + dx
+    x
+  }
 }
