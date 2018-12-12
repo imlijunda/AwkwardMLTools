@@ -17,6 +17,11 @@
 #' @return a 3-d array.
 #' @export
 #'
+#' @examples
+#' dummy <- function(id) matrix(runif(64), 8, 8)
+#' files <- c("ch1", "ch2", "ch3")
+#' img <- LoadImage(files, dummy)
+#' img_flat <- LoadImage(files, dummy, ret.flatten = TRUE)
 LoadImage <- function(files, loader, h = NULL, w = NULL, nch = NULL,
                       channel_last = TRUE, ret.flatten = FALSE) {
 
@@ -74,6 +79,10 @@ LoadImage <- function(files, loader, h = NULL, w = NULL, nch = NULL,
 #' @return a 4-d array.
 #' @export
 #'
+#' @examples
+#' dummy <- function(id) matrix(runif(64), 8, 8)
+#' files <- list(c("f1_ch1", "f1_ch2", "f1_ch3"), c("f2_ch1", "f2_ch2", "f2_ch3"))
+#' img <- LoadImageBatch(files, dummy, 8, 8, 3)
 LoadImageBatch <- function(files, loader, h, w, nch, channel_last = TRUE,
                            batch_last = FALSE, ret.flatten = FALSE) {
 

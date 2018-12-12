@@ -31,7 +31,7 @@ a generator function
 \description{
 DataGenerator creates a stateful function wrapper for the loader function as
 a workaround to load out-of-memory datasets in keras.
-The returned generator function can be passed to git_generator() directly and
+The returned generator function can be passed to fit_generator() directly and
 loops over sample_ids indefinitely.
 }
 \details{
@@ -60,4 +60,6 @@ process will stay in the background even training is over and no more loading
 is needed. In order to stop the child process and cleanup memory, you should
 call CleanupGenerator(generator), or generator(STOP = TRUE) to signal the child
 process and garbage collection.
+
+DataGeneratorNonblock(...) is equivalent to DataGeneratorMultiProc(..., n_workers = 1)
 }

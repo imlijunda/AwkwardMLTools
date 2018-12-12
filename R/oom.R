@@ -2,7 +2,7 @@
 #'
 #' DataGenerator creates a stateful function wrapper for the loader function as
 #' a workaround to load out-of-memory datasets in keras.
-#' The returned generator function can be passed to git_generator() directly and
+#' The returned generator function can be passed to fit_generator() directly and
 #' loops over sample_ids indefinitely.
 #'
 #' Since it can be tricky to implement a python-like iterator in R, using
@@ -30,6 +30,8 @@
 #' is needed. In order to stop the child process and cleanup memory, you should
 #' call CleanupGenerator(generator), or generator(STOP = TRUE) to signal the child
 #' process and garbage collection.
+#'
+#' DataGeneratorNonblock(...) is equivalent to DataGeneratorMultiProc(..., n_workers = 1)
 #'
 #' @param loader a loader function that accepts a subset of sample_ids and returns
 #' loaded data. See Details for more information.
@@ -193,14 +195,13 @@ DataGeneratorMultiProc <- function(loader, sample_ids, sample_cls = NULL, batch_
 
 #' Stop a non-blocking generator worker process and cleanup.
 #'
-#' Because a generator loops indefinitely, when invoking a non-blocking generator,
-#' a child process is always forked in background loading next batch. Even though
-#' the generator is not need anymore. Calling this function results in stopping
+#' Because a generator loops indefinitely, when invoking non-blocking generators,
+#' child processes are always forked in background loading next batches. Even though
+#' the generators are not need anymore. Calling this function results in stopping
 #' the child process and any consequence IO.
 #'
-#' This function might block since it waits for last worker to return. It has the
-#' same effect of calling generator(STOP = TRUE) but returns value invisibly with
-#' an extra call to gc().
+#' This function force stops the multi-process generator and remove the function
+#' from its parent frame to make gc works.
 #'
 #' @param generator a generator function.
 #'

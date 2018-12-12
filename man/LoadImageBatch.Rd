@@ -40,3 +40,8 @@ of which each element contains a list of files to load and concatenate by
 channel.
 The latter can be handy when data is provided in single-channel image files.
 }
+\examples{
+dummy <- function(id) matrix(runif(64), 8, 8)
+files <- list(c("f1_ch1", "f1_ch2", "f1_ch3"), c("f2_ch1", "f2_ch2", "f2_ch3"))
+img <- LoadImageBatch(files, dummy, 8, 8, 3)
+}

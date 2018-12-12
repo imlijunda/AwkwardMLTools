@@ -37,3 +37,9 @@ loaded as a new multi-channel image.
 It is encouraged to provide h and w unless ret.flatten is TRUE, since an extra
 loading is run to evaluate them thus reducing performance.
 }
+\examples{
+dummy <- function(id) matrix(runif(64), 8, 8)
+files <- c("ch1", "ch2", "ch3")
+img <- LoadImage(files, dummy)
+img_flat <- LoadImage(files, dummy, ret.flatten = TRUE)
+}
