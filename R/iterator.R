@@ -16,9 +16,6 @@
 iterator_atomic <- function(x) {
 
   x <- unlist(x)
-  if (!is.vector(x)) {
-    err_invalid_class(x, "is not iterable atomic vector.")
-  }
 
   idx <- 0L
   n <- length(x)
@@ -60,9 +57,6 @@ iterator_batch <- function(x, batch_size = 1L) {
   }
 
   x <- unlist(x)
-  if (!is.vector(x)) {
-    err_invalid_class(x, "is not iterable atomic vector.")
-  }
 
   n <- length(x)
   if (!n) {
