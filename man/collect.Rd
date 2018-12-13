@@ -4,7 +4,7 @@
 \alias{collect}
 \title{Collect multiple iterate values from an iterator.}
 \usage{
-collect(itr, n = 1L)
+collect(itr, n = NULL)
 }
 \arguments{
 \item{itr}{an iterator or a counter function.}

@@ -9,10 +9,14 @@
 #' @examples
 #' itr <- iterator_zip(1:3, 6:8)
 #' collect(itr, 5)
-collect <- function(itr, n = 1L) {
+collect <- function(itr, n = NULL) {
 
   if (!(is.iterator(itr) || is.function(itr))) {
     err_invalid_class(itr, "is not an iterator or a function.")
+  }
+
+  if (is.null(n)) {
+    n <- size(itr)
   }
 
   sapply(seq_len(n), function(x) itr())

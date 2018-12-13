@@ -36,6 +36,29 @@ err_invalid_class <- function(var, elaborate = NULL) {
   err(msg)
 }
 
+err_invalid_length <- function(var, elaborate = NULL) {
+
+  var_name <- as.character(substitute(var))
+  msg <- sprintf("Invalid length of %s: %d", var_name, length(var))
+  if (!is.null(elaborate)) {
+    msg <- paste0(msg, " ", elaborate)
+  }
+
+  err(msg)
+}
+
+err_invalid_retval <- function(var, f, elaborate = NULL) {
+
+  var_name <- as.character(substitute(var))
+  f_name <- as.character(substitute(f))
+  msg <- sprintf("%s(%s) returned invalid value", var_name, f_name)
+  if (!is.null(elaborate)) {
+    msg <- paste0(msg, " ", elaborate)
+  }
+
+  err(msg)
+}
+
 err_worker_null <- function(pid) {
 
   msg <- sprintf("Worker PID = %s returned NULL. Stopping all forked processes.", toString(pid))

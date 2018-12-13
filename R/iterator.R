@@ -59,12 +59,17 @@ iterator_batch <- function(x, batch_size = 1L) {
     return(iterator_atomic(x))
   }
 
+  x <- unlist(x)
+  if (!is.vector(x)) {
+    err_invalid_class(x, "is not iterable atomic vector.")
+  }
+
   n <- length(x)
   if (!n) {
     err_invalid_value(x, "argument is of zero length.")
   }
   if (batch_size > n) {
-    err_invalid_value(batch_size, "batch size is larger than iterator.")
+    err_invalid_length(batch_size, "batch size is larger than iterator.")
   }
 
   idx_start <- 0L
