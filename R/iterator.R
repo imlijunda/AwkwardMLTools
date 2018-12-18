@@ -16,6 +16,11 @@
 iterator_atomic <- function(x) {
 
   x <- unlist(x)
+  if (is.list(x)) {
+    f <- `[[`
+  } else {
+    f <- `[`
+  }
 
   idx <- 0L
   n <- length(x)
@@ -30,7 +35,7 @@ iterator_atomic <- function(x) {
       idx <<- idx + 1L
     }
 
-    x[idx]
+    f(x, idx)
   }
   attr(iter, "class") <- "iterator"
   attr(iter, "size") <- n
@@ -132,7 +137,7 @@ iterator_zip <- function(...) {
 
   empty <- list()
   iter <- function() {
-    unlist(sapply(args, do.call, empty))
+    sapply(args, do.call, empty)
   }
   attr(iter, "class") <- "iterator"
   attr(iter, "size") <- Reduce(lcm_, sapply(args, size), 1L)
