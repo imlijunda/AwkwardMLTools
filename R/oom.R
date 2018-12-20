@@ -78,6 +78,8 @@ DataGeneratorNonblock <- function(loader, sample_ids, sample_cls = NULL, batch_s
                          batch_size = batch_size, n_workers = 1L)
 }
 
+parallel_rmChild <- utils::getFromNamespace("rmChild", "parallel")
+
 #' @rdname DataGenerator
 #' @export
 DataGeneratorMultiProc <- function(loader, sample_ids, sample_cls = NULL, batch_size,
@@ -114,7 +116,7 @@ DataGeneratorMultiProc <- function(loader, sample_ids, sample_cls = NULL, batch_
 
   force_stop <- function() {
     for (worker in workers) {
-      parallel:::rmChild(worker$proc$pid)
+      parallel_rmChild(worker$proc$pid)
     }
     stopped <<- TRUE
 
