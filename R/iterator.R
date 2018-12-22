@@ -71,25 +71,25 @@ iterator_batch <- function(x, batch_size = 1L) {
     err_invalid_length(batch_size, "batch size is larger than iterator.")
   }
 
-  idx_start <- 0L
-  idx_end <- 0L
+  idx_start <- seq.int(1L, n, batch_size)
+  size <- length(idx_start)
+  if (size == 2L) {
+    idx_end <- c(idx_start[2L] - 1L, n)
+  } else {
+    idx_end <- c(idx_start[2L:size] - 1L, n)
+  }
+  idx <- 0L
   iter <- function() {
-    if (idx_end == n) {
-      idx_start <<- 1L
+    if (idx == size) {
+      idx <<- 1L
     } else {
-      idx_start <<- idx_end + 1L
-    }
-    tmp <- idx_start + batch_size - 1L
-    if (tmp > n) {
-      idx_end <<- n
-    } else {
-      idx_end <<- tmp
+      idx <<- idx + 1L
     }
 
-    x[seq.int(idx_start, idx_end)]
+    x[seq.int(idx_start[idx], idx_end[idx])]
   }
   attr(iter, "class") <- "iterator"
-  attr(iter, "size") <- n %/% batch_size + as.logical(n %% batch_size)
+  attr(iter, "size") <- size
 
   iter
 }
