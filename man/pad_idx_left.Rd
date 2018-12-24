@@ -3,11 +3,14 @@
 \name{pad_idx_left}
 \alias{pad_idx_left}
 \alias{pad_idx_right}
+\alias{pad_idx}
 \title{Pad indices to left or right}
 \usage{
 pad_idx_left(idx, start = 1L)
 
 pad_idx_right(idx, end = NA)
+
+pad_idx(idx)
 }
 \arguments{
 \item{idx}{a vector of indices}

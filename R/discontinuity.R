@@ -69,3 +69,13 @@ pad_idx_right <- function(idx, end = NA) {
 
   c(idx[2L:n] - 1L, end)
 }
+
+#' @rdname pad_idx_left
+#' @export
+#'
+pad_idx <- function(idx) {
+
+  n <- length(idx)
+
+  idx[2L:n] - 1L
+}
