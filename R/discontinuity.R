@@ -1,36 +1,57 @@
-#' Indices of samples
+#' Find indices
 #'
-#' @description this niche function compare sampled values to measured values
-#' cmpf(), and returns a vector of first passed indices for every sampled value.
-#' The assumption of measured and sampled being sorted by cmpf guarantees cmpf
-#' is called only N times provided length(measured) == N.
+#' @description this niche function compares key to val by cmpf(val, key), and
+#' returns the indices that passed cmpf(). FindIdx assumes that val and key are
+#' sorted by cmpf and finds indices in O(n). FindIdxUnsorted assumes that val
+#' and key are not sorted and finds indices in O(n^2). Since cmpf is arbitrary,
+#' binary search is not used.
 #'
-#' @param measured a vector of measured values, must be sorted by cmpf
-#' @param sampled a vector of sampled values, must be sorted by cmpf
-#' @param cmpf a test function to compare sampled values to measured values
+#' @param val a vector of values.
+#' @param key a vector of keys to find in val.
+#' @param cmpf a comparison function.
 #'
-#' @return a vector of indices of measured values
+#' @return a vector of found indices.
 #' @export
 #'
 #' @examples
 #' measured <- sort(sample(seq(1000000), 500000))
 #' sampled <- sort(sample(measured, 20000) + runif(20000, -100, 0))
-#' indices <- sample_idx(measured, sampled, cmpf = `>=`)
+#' indices <- FindIdx(measured, sampled, cmpf = `>=`)
 #' stopifnot(all(measured[indices] >= sampled))
-sample_idx <- function(measured, sampled, cmpf = `>=`) {
+FindIdx <- function(val, key, cmpf = `>=`) {
 
-  n <- length(sampled)
-  itr <- iterator_atomic(sampled)
+  n <- length(key)
+  itr_key <- iterator_atomic(key)
   ans <- rep(NA_integer_, n)
 
-  idx <- 0L
-  cmpval <- itr()
-  for (i in seq_along(measured)) {
-    if (cmpf(measured[i], cmpval)) {
-      idx <- idx + 1L
-      cmpval <- itr()
-      ans[idx] <- i
-      if (idx == n) {
+  idx_ans <- 0L
+  val_key <- itr_key()
+  for (i in seq_along(val)) {
+    if (cmpf(val[i], val_key)) {
+      idx_ans <- idx_ans + 1L
+      val_key <- itr_key()
+      ans[idx_ans] <- i
+      if (idx_ans == n) {
+        break
+      }
+    }
+  }
+
+  ans
+}
+
+#' @rdname FindIdx
+#' @export
+#'
+FindIdxUnsorted <- function(val, key, cmpf = `>=`) {
+
+  n <- length(key)
+  ans <- rep(NA_integer_, n)
+
+  for (i in seq_along(key)) {
+    for (j in seq_along(val)) {
+      if (cmpf(val[i], key[j])) {
+        ans[i] <- j
         break
       }
     }
