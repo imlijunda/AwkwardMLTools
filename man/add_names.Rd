@@ -15,7 +15,8 @@ add_names(itr, value)
 an iterator
 }
 \description{
-Make an iterator returns named values.
+This function is significantly slower since names are set to returned objects
+ everytime the iterator is called.
 }
 \examples{
 itr <- iterator_product(1:3, 4:5)

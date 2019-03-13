@@ -15,7 +15,9 @@ fake_vectorise(f, ...)
 a function
 }
 \description{
-Fake vectorisation of function
+Since iterator_atomic_cond and iterator_batch_cond only supports vectorised
+function, this function is a simple sapply wrapper make any function compatible
+with them.
 }
 \examples{
 f <- function(x) length(x)

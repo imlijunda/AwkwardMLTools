@@ -15,7 +15,6 @@
 #' itr()
 iterator_atomic <- function(x) {
 
-  x <- unlist(x)
   if (is.list(x)) {
     f <- `[[`
   } else {
@@ -61,7 +60,11 @@ iterator_batch <- function(x, batch_size = 1L) {
     return(iterator_atomic(x))
   }
 
-  x <- unlist(x)
+  if (is.list(x)) {
+    f <- function(l, idx) lapply(idx, function(i) l[[i]])
+  } else {
+    f <- `[`
+  }
 
   n <- length(x)
   if (!n) {
@@ -86,7 +89,7 @@ iterator_batch <- function(x, batch_size = 1L) {
       idx <<- idx + 1L
     }
 
-    x[seq.int(idx_start[idx], idx_end[idx])]
+    f(x, seq.int(idx_start[idx], idx_end[idx]))
   }
   attr(iter, "class") <- "iterator"
   attr(iter, "size") <- size
@@ -214,6 +217,8 @@ iterator_product <- function(...) {
 }
 
 #' Create a counter that counts forever (before overflowing).
+#'
+#' Please notice the returned object class is not iterator.
 #'
 #' @param start counter start
 #' @param step step size

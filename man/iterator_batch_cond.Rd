@@ -22,7 +22,7 @@ iterator_partition_cond(x, part_size = 1L, cond)
 an iterator
 }
 \description{
-Conditioned batch iterator
+The conditions are evaluated only once thus cond() should NOT have side effects.
 }
 \examples{
 x <- runif(n = 50)

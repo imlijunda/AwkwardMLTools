@@ -15,7 +15,7 @@ iterator_atomic_cond(x, cond)
 an iterator
 }
 \description{
-Conditioned atomic iterator
+The conditions are evaluated only once thus cond() should NOT have side effects.
 }
 \examples{
 x <- runif(n = 10)

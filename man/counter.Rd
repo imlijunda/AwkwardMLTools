@@ -15,7 +15,7 @@ counter(start = 1L, step = 1L)
 a counter function.
 }
 \description{
-Create a counter that counts forever (before overflowing).
+Please notice the returned object class is not iterator.
 }
 \examples{
 ctr <- counter(1, .5)

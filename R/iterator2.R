@@ -35,6 +35,9 @@ inject_env <- function(itr, names) {
 
 #'  Make an iterator returns named values.
 #'
+#'  This function is significantly slower since names are set to returned objects
+#'  everytime the iterator is called.
+#'
 #' @param itr an iterator
 #' @param value a character vector of desired names
 #'
@@ -51,19 +54,17 @@ add_names <- function(itr, value) {
   if (!length(value)) {
     err_invalid_value(value, "argument is of zero length.")
   }
-  ans <- rep(NA, length(value))
-  names(ans) <- value
+
+  elem_names <- value
   iter <- function() {
-    tmp <- itr()
-    for (i in seq_along(ans)) {
-      ans[i] <<- tmp[i]
-    }
+    ans <- itr()
+    names(ans) <- elem_names
 
     ans
   }
   attr(iter, "class") <- "iterator"
   attr(iter, "size") <- size(itr)
-  attr(iter, "elem_names") <- value
+  attr(iter, "elem_names") <- elem_names
 
   iter
 }
@@ -87,6 +88,10 @@ names.iterator <- function(x) {
 
 #' Fake vectorisation of function
 #'
+#' Since iterator_atomic_cond and iterator_batch_cond only supports vectorised
+#' function, this function is a simple sapply wrapper make any function compatible
+#' with them.
+#'
 #' @param f a non-vectorised function
 #' @param ... additional arguments passed to wrapped function
 #'
@@ -107,6 +112,8 @@ fake_vectorise <- function(f, ...) {
 
 #' Conditioned atomic iterator
 #'
+#' The conditions are evaluated only once thus cond() should NOT have side effects.
+#'
 #' @param x an atomic vector
 #' @param cond a conditional function, must be vectorised.
 #'
@@ -122,7 +129,6 @@ fake_vectorise <- function(f, ...) {
 #' collect(itr2)
 iterator_atomic_cond <- function(x, cond) {
 
-  x <- unlist(x)
   if (!is.vector(x)) {
     err_invalid_class(x, "is not iterable atomic vector.")
   }
@@ -133,7 +139,12 @@ iterator_atomic_cond <- function(x, cond) {
     cond_eval <- as.logical(cond)
   }
 
-  x <- x[cond_eval]
+  if (is.list(x)) {
+    x <- lapply(which(cond_eval), function(idx) x[[idx]])
+  } else {
+    x <- x[cond_eval]
+  }
+
   n <- length(x)
   if (!n) {
     err_invalid_length(x, "satisfying value is of zero length.")
@@ -143,6 +154,8 @@ iterator_atomic_cond <- function(x, cond) {
 }
 
 #' Conditioned batch iterator
+#'
+#' The conditions are evaluated only once thus cond() should NOT have side effects.
 #'
 #' @param x an atomic vector
 #' @param batch_size batch size
@@ -165,13 +178,22 @@ iterator_batch_cond <- function(x, batch_size = 1L, cond) {
     return(iterator_atomic_cond(x, cond))
   }
 
-  x <- unlist(x)
   if (!is.vector(x)) {
     err_invalid_class(x, "is not iterable atomic vector.")
   }
 
-  cond_eval <- cond(x)
-  x <- x[cond_eval]
+  if (is.function(cond)) {
+    cond_eval <- cond(x)
+  } else {
+    cond_eval <- as.logical(cond)
+  }
+
+  if (is.list(x)) {
+    x <- lapply(which(cond_eval), function(idx) x[[idx]])
+  } else {
+    x <- x[cond_eval]
+  }
+
   n <- length(x)
   if (!n || n < batch_size) {
     err_invalid_length(x, "satisfying value is smaller than batch size.")
