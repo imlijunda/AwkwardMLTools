@@ -4,12 +4,14 @@
 \alias{collect}
 \title{Collect multiple iterate values from an iterator.}
 \usage{
-collect(itr, n = NULL)
+collect(itr, n = NULL, simplify = TRUE)
 }
 \arguments{
 \item{itr}{an iterator or a counter function.}
 
 \item{n}{how many iterates to collect.}
+
+\item{simplify}{passed to sapply()}
 }
 \value{
 a vector/matrix/list depending on iterator.

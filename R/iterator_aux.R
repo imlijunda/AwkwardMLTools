@@ -2,6 +2,7 @@
 #'
 #' @param itr an iterator or a counter function.
 #' @param n how many iterates to collect.
+#' @param simplify passed to sapply()
 #'
 #' @return a vector/matrix/list depending on iterator.
 #' @export
@@ -9,7 +10,7 @@
 #' @examples
 #' itr <- iterator_zip(1:3, 6:8)
 #' collect(itr, 5)
-collect <- function(itr, n = NULL) {
+collect <- function(itr, n = NULL, simplify = TRUE) {
 
   if (!(is.iterator(itr) || is.function(itr))) {
     err_invalid_class(itr, "is not an iterator or a function.")
@@ -19,7 +20,7 @@ collect <- function(itr, n = NULL) {
     n <- size(itr)
   }
 
-  sapply(seq_len(n), function(x) itr())
+  sapply(seq_len(n), function(x) itr(), simplify = simplify)
 }
 
 #' Size of an iterator.
